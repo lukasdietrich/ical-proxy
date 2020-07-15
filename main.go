@@ -11,6 +11,7 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/middleware"
 )
 
 type calendarMap map[string]calendar
@@ -47,6 +48,8 @@ func main() {
 // listenAndServe starts a web server on addr handling incoming http requests.
 func listenAndServe(addr string, calendars calendarMap) error {
 	mux := chi.NewMux()
+	mux.Use(middleware.Logger)
+	mux.Use(middleware.Recoverer)
 	mux.Get("/ical/{calendar}.ics", handleProxy(calendars))
 
 	return http.ListenAndServe(addr, mux)
