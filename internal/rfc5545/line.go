@@ -27,6 +27,16 @@ type ContentLine struct {
 	Value  []byte
 }
 
+func (c *ContentLine) appendParam(name []byte) {
+	c.Params = append(c.Params, Param{Name: name})
+}
+
+func (c *ContentLine) appendParamValue(value []byte) {
+	p := c.Params
+	i := len(c.Params) - 1
+	p[i].Values = append(p[i].Values, value)
+}
+
 func (c *ContentLine) unmarshal(line []byte) error {
 	const (
 		_ = iota
@@ -36,6 +46,9 @@ func (c *ContentLine) unmarshal(line []byte) error {
 		sParamValueQuote
 		sParamValueUnquote
 		sValue
+
+		cSafeChar  = "SAFE-CHAR"
+		cQsafeChar = "QSAFE-CHAR"
 	)
 
 	c.Params = c.Params[:0] // reset params
@@ -59,7 +72,7 @@ func (c *ContentLine) unmarshal(line []byte) error {
 
 		case sParamName:
 			if b == equals {
-				c.Params = append(c.Params, Param{Name: line[offset:i]})
+				c.appendParam(line[offset:i])
 				offset = i + 1
 				state = sParamValueAny
 			}
@@ -68,8 +81,7 @@ func (c *ContentLine) unmarshal(line []byte) error {
 			if i == offset && b == dquote {
 				state = sParamValueQuote
 			} else if b == semicolon || b == colon || b == comma {
-				p := &c.Params[len(c.Params)-1]
-				p.Values = append(p.Values, line[offset:i])
+				c.appendParamValue(line[offset:i])
 				offset = i + 1
 
 				if b == semicolon {
@@ -80,20 +92,19 @@ func (c *ContentLine) unmarshal(line []byte) error {
 					state = sParamValueAny
 				}
 			} else if !isSafeChar(b) {
-				return unexpectedCharError(line, i, "SAFE-CHAR")
+				return unexpectedCharError(line, i, cSafeChar)
 			}
 
 		case sParamValueQuote:
 			if b == dquote {
 				state = sParamValueUnquote
 			} else if !isQsafeChar(b) {
-				return unexpectedCharError(line, i, "QSAFE-CHAR")
+				return unexpectedCharError(line, i, cQsafeChar)
 			}
 
 		case sParamValueUnquote:
 			if b == semicolon || b == colon || b == comma {
-				p := &c.Params[len(c.Params)-1]
-				p.Values = append(p.Values, line[offset:i])
+				c.appendParamValue(line[offset:i])
 				offset = i + 1
 
 				if b == semicolon {
@@ -109,7 +120,7 @@ func (c *ContentLine) unmarshal(line []byte) error {
 
 		case sValue:
 			if !isSafeChar(b) {
-				return unexpectedCharError(line, i, "SAFE-CHAR")
+				return unexpectedCharError(line, i, cSafeChar)
 			}
 		}
 	}
