@@ -12,7 +12,7 @@ import (
 func main() {
 	var filename string
 
-	flag.StringVar(&filename, "config", "config.yaml", "The filename of the configuration yaml")
+	flag.StringVar(&filename, "config", "config.yml", "The filename of the configuration file")
 	flag.Parse()
 
 	config, err := parseConfig(filename)

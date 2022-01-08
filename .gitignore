@@ -12,3 +12,5 @@
 !*.go
 
 !Dockerfile
+
+!example.config.yml

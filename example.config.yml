@@ -1,0 +1,17 @@
+http:
+  host: '0.0.0.0'
+  port: 80
+
+calendars:
+  '/my-proxied-calendar.ics':
+    origin:
+      url: 'https://example.com/original-calendar.ics'
+    rules:
+      - match:
+        - scope: 'name'
+          pattern: '(?i)(description|location)'
+      - match:
+        - scope: 'name'
+          pattern: '(?i)(url)'
+        - scope: 'value'
+          pattern: 'example.com'
