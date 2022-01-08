@@ -7,12 +7,12 @@ import (
 )
 
 var (
-	ErrUnexpectedEOL  = errors.New("rfc5455: unexpected eol")
-	ErrUnexpectedChar = errors.New("rfc5455: unexpected char")
+	ErrUnexpectedEOL  = errors.New("rfc5545: unexpected eol")
+	ErrUnexpectedChar = errors.New("rfc5545: unexpected char")
 )
 
 func unexpectedCharError(line []byte, i int, expected string) error {
-	return fmt.Errorf("%w: %x in %q[%d]: expected %s",
+	return fmt.Errorf("%w: '%c' in %q[%d]: expected %s",
 		ErrUnexpectedChar, line[i], line, i, expected)
 }
 
@@ -49,6 +49,7 @@ func (c *ContentLine) unmarshal(line []byte) error {
 
 		cSafeChar  = "SAFE-CHAR"
 		cQsafeChar = "QSAFE-CHAR"
+		cValueChar = "VALUE-CHAR"
 	)
 
 	c.Params = c.Params[:0] // reset params
@@ -119,8 +120,8 @@ func (c *ContentLine) unmarshal(line []byte) error {
 			}
 
 		case sValue:
-			if !isSafeChar(b) {
-				return unexpectedCharError(line, i, cSafeChar)
+			if !isValueChar(b) {
+				return unexpectedCharError(line, i, cValueChar)
 			}
 		}
 	}
