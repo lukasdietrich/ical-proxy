@@ -96,7 +96,7 @@ func (p *Calendar) applyRules(w rfc5545.Writer, r rfc5545.Reader) error {
 			return err
 		}
 
-		if p.matchAnyRule(line) {
+		if !p.matchAnyRule(line) {
 			w.Write(line)
 		}
 	}
