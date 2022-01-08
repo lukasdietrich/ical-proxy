@@ -19,4 +19,4 @@ FROM alpine:latest
 	LABEL org.opencontainers.image.url="ghcr.io/lukasdietrich/ical-proxy"
 	LABEL org.opencontainers.image.source="https://github.com/lukasdietrich/ical-proxy"
 
-	CMD [ "/app/ical-proxy", "-config", "/data/config.yaml" ]
+	CMD [ "/app/ical-proxy", "-config", "/data/config.yml" ]
