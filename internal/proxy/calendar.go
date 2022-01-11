@@ -96,7 +96,7 @@ func (p *Calendar) applyRules(w rfc5545.Writer, r rfc5545.Reader) error {
 			return err
 		}
 
-		if !p.matchAnyRule(line) {
+		if p.keepContentLine(line) {
 			w.Write(line)
 		}
 	}
@@ -105,12 +105,12 @@ func (p *Calendar) applyRules(w rfc5545.Writer, r rfc5545.Reader) error {
 
 }
 
-func (p *Calendar) matchAnyRule(line *rfc5545.ContentLine) bool {
+func (p *Calendar) keepContentLine(line *rfc5545.ContentLine) bool {
 	for _, rule := range p.rules {
 		if rule.Match(line) {
-			return true
+			return false
 		}
 	}
 
-	return false
+	return true
 }
