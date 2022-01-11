@@ -81,10 +81,6 @@ func (r *foldingReader) unfold() error {
 	}
 
 	for r.scanner.Scan() {
-		if err := r.scanner.Err(); err != nil {
-			return err
-		}
-
 		r.peeked = true
 		b := r.scanner.Bytes()
 
@@ -98,7 +94,7 @@ func (r *foldingReader) unfold() error {
 	}
 
 	r.peeked = false
-	return nil
+	return r.scanner.Err()
 }
 
 type foldingWriter struct {
