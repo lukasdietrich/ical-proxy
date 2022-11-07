@@ -1,6 +1,7 @@
 package proxy
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"io"
@@ -9,11 +10,6 @@ import (
 
 	"github.com/lukasdietrich/ical-proxy/internal/rfc5545"
 	"github.com/lukasdietrich/ical-proxy/internal/rules"
-)
-
-const (
-	headerContentType  = "Content-Type"
-	headerCacheControl = "Cache-Control"
 )
 
 type Origin struct {
@@ -28,6 +24,7 @@ type CalendarSpec struct {
 type Calendar struct {
 	origin Origin
 	rules  []rules.Rule
+	cache  cache
 }
 
 func NewCalendar(calendarSpec CalendarSpec) (*Calendar, error) {
@@ -72,17 +69,42 @@ func handlePanic(w http.ResponseWriter, r *http.Request) {
 }
 
 func (p *Calendar) fetchAndProxy(w http.ResponseWriter) error {
+	p.cache.Lock()
+	defer p.cache.Unlock()
+
+	if err := p.updateCache(); err != nil {
+		log.Printf("could not update cache: %v", err)
+	}
+
+	return p.cache.respondFromCache(w)
+}
+
+func (p *Calendar) updateCache() error {
+	maxAge, age, valid := p.cache.expiration.evaluate()
+	if valid && age < (maxAge/2) {
+		return nil
+	}
+
 	res, err := http.Get(p.origin.URL)
 	if err != nil {
 		return fmt.Errorf("could not fetch origin %q: %w", p.origin.URL, err)
 	}
 
-	header := w.Header()
-	header.Add(headerContentType, "text/calendar")
-	header.Add(headerCacheControl, res.Header.Get(headerCacheControl))
-
 	defer res.Body.Close()
-	return p.applyRules(rfc5545.NewWriter(w), rfc5545.NewReader(res.Body))
+	var buffer bytes.Buffer
+
+	if err := p.applyRules(rfc5545.NewWriter(&buffer), rfc5545.NewReader(res.Body)); err != nil {
+		return fmt.Errorf("could not rewrite calendar: %w", err)
+	}
+
+	expiration, err := parseCacheControl(res.Header)
+	if err != nil {
+		return err
+	}
+
+	p.cache.expiration = expiration
+	p.cache.buffer = buffer.Bytes()
+	return nil
 }
 
 func (p *Calendar) applyRules(w rfc5545.Writer, r rfc5545.Reader) error {

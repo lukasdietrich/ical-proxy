@@ -22,7 +22,7 @@ func main() {
 
 	mux, err := proxy.NewMux(config.Calendars)
 	if err != nil {
-		log.Fatalf("could not build calendar mux: %w", err)
+		log.Fatalf("could not build calendar mux: %v", err)
 	}
 
 	address := net.JoinHostPort(config.HTTP.Host, config.HTTP.Port)
