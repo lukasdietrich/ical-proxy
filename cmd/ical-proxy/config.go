@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"gopkg.in/yaml.v3"
+	"github.com/goccy/go-yaml"
 
 	"github.com/lukasdietrich/ical-proxy/internal/proxy"
 )
@@ -36,5 +36,5 @@ func parseConfig(filename string) (*Config, error) {
 	defer f.Close()
 
 	config := defaultConfig()
-	return &config, yaml.NewDecoder(f).Decode(&config)
+	return &config, yaml.NewDecoder(f, yaml.Strict()).Decode(&config)
 }
