@@ -9,6 +9,7 @@ type CalendarMuxSpec map[string]CalendarSpec
 
 func NewMux(muxSpec CalendarMuxSpec) (http.Handler, error) {
 	mux := http.NewServeMux()
+	mux.HandleFunc("/healthz", healthz)
 
 	for url, calendarSpec := range muxSpec {
 		calendar, err := NewCalendar(calendarSpec)
@@ -21,4 +22,8 @@ func NewMux(muxSpec CalendarMuxSpec) (http.Handler, error) {
 	}
 
 	return mux, nil
+}
+
+func healthz(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
 }

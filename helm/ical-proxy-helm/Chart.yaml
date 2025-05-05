@@ -1,0 +1,6 @@
+apiVersion: v2
+name: ical-proxy-helm
+description: A Helm chart for ical-proxy
+type: application
+version: git-tag
+appVersion: git-tag

@@ -12,5 +12,8 @@
 !*.go
 
 !Containerfile
+!helm/**/*.tpl
+!helm/**/*.yaml
+!helm/**/.helmignore
 
 !example.config.yml
