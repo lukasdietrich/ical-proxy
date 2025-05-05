@@ -33,6 +33,7 @@ func parseConfig(filename string) (*Config, error) {
 		return nil, err
 	}
 
+	//nolint:errcheck
 	defer f.Close()
 
 	config := defaultConfig()

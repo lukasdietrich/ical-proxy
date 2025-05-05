@@ -27,5 +27,5 @@ func isValueChar(b byte) bool {
 }
 
 func isControl(b byte) bool {
-	return (b >= 0x00 && b <= 0x08) || (b >= 0x0a && b <= 0x1f) || b == 0x7f
+	return b <= 0x08 || (b >= 0x0a && b <= 0x1f) || b == 0x7f
 }

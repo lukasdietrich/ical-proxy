@@ -58,7 +58,10 @@ func (p *Calendar) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func sendStatus(w http.ResponseWriter, status int) {
 	w.WriteHeader(status)
-	w.Write([]byte(http.StatusText(status)))
+
+	if _, err := w.Write([]byte(http.StatusText(status))); err != nil {
+		log.Printf("could not write status: %v", err)
+	}
 }
 
 func handlePanic(w http.ResponseWriter, r *http.Request) {
@@ -90,6 +93,7 @@ func (p *Calendar) updateCache() error {
 		return fmt.Errorf("could not fetch origin %q: %w", p.origin.URL, err)
 	}
 
+	//nolint:errcheck
 	defer res.Body.Close()
 	var buffer bytes.Buffer
 
@@ -119,12 +123,11 @@ func (p *Calendar) applyRules(w rfc5545.Writer, r rfc5545.Reader) error {
 		}
 
 		if p.keepContentLine(line) {
-			w.Write(line)
+			if err := w.Write(line); err != nil {
+				return err
+			}
 		}
 	}
-
-	return nil
-
 }
 
 func (p *Calendar) keepContentLine(line *rfc5545.ContentLine) bool {

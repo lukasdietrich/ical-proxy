@@ -85,13 +85,15 @@ func (c *ContentLine) unmarshal(line []byte) error {
 				c.appendParamValue(line[offset:i])
 				offset = i + 1
 
-				if b == semicolon {
+				switch b {
+				case semicolon:
 					state = sParamName
-				} else if b == colon {
+				case colon:
 					state = sValue
-				} else {
+				default:
 					state = sParamValueAny
 				}
+
 			} else if !isSafeChar(b) {
 				return unexpectedCharError(line, i, cSafeChar)
 			}
@@ -108,11 +110,12 @@ func (c *ContentLine) unmarshal(line []byte) error {
 				c.appendParamValue(line[offset:i])
 				offset = i + 1
 
-				if b == semicolon {
+				switch b {
+				case semicolon:
 					state = sParamName
-				} else if b == colon {
+				case colon:
 					state = sValue
-				} else {
+				default:
 					state = sParamValueAny
 				}
 			} else {
