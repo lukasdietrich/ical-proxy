@@ -6,9 +6,9 @@ metadata:
   labels:
     {{- include "ical-proxy-helm.labels" . | nindent 4 }}
 data:
-  config.yaml: |
+  config.yml: |
     http:
       host: ''
       port: {{ .Values.service.port }}
 
-    calendars: {{ .Values.ical-proxy.calendars | toYaml | nindent 6 }}
+    calendars: {{ index .Values "ical-proxy" "calendars" | toYaml | nindent 6 }}

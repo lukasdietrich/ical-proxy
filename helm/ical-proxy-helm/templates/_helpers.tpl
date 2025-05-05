@@ -49,14 +49,3 @@ Selector labels
 app.kubernetes.io/name: {{ include "ical-proxy-helm.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
-
-{{/*
-Create the name of the service account to use
-*/}}
-{{- define "ical-proxy-helm.serviceAccountName" -}}
-{{- if .Values.serviceAccount.create }}
-{{- default (include "ical-proxy-helm.fullname" .) .Values.serviceAccount.name }}
-{{- else }}
-{{- default "default" .Values.serviceAccount.name }}
-{{- end }}
-{{- end }}
