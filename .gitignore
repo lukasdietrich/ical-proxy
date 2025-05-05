@@ -11,6 +11,6 @@
 !go.sum
 !*.go
 
-!Dockerfile
+!Containerfile
 
 !example.config.yml
