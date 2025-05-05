@@ -41,3 +41,29 @@ jobs:
           registry: ghcr.io/${{ github.repository_owner }}
           username: ${{ github.actor }}
           password: ${{ github.token }}
+
+  helm:
+    name: Publish helm chart
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout 
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Replace git-tag in Chart.yaml
+        run: |
+          sed -i "s/git-tag/${{ github.ref_name }}/g" helm/ical-proxy-helm/Chart.yaml
+
+      - name: Login to ghcr.io
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+
+      - name: Push chart
+        run: |
+          helm package helm/ical-proxy-helm
+          helm push "ical-proxy-helm-${{ github.ref_name }}.tgz" "oci://ghcr.io/${{ github.actor }}"
