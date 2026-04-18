@@ -2,9 +2,9 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ include "ical-proxy-helm.fullname" . }}
+  name: {{ include "ical-proxy.fullname" . }}
   labels:
-    {{- include "ical-proxy-helm.labels" . | nindent 4 }}
+    {{- include "ical-proxy.labels" . | nindent 4 }}
   {{- with .Values.ingress.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
@@ -35,7 +35,7 @@ spec:
             {{- end }}
             backend:
               service:
-                name: {{ include "ical-proxy-helm.fullname" $ }}
+                name: {{ include "ical-proxy.fullname" $ }}
                 port:
                   number: {{ $.Values.service.port }}
           {{- end }}

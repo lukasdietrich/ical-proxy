@@ -3,7 +3,7 @@
 
 !.github/**/*.yml
 !.gitignore
-!.dockerignore
+!.containerignore
 !README.md
 !LICENSE
 
@@ -12,8 +12,8 @@
 !*.go
 
 !Containerfile
-!helm/**/*.tpl
-!helm/**/*.yaml
-!helm/**/.helmignore
+!charts/**/*.tpl
+!charts/**/*.yaml
+!charts/**/.helmignore
 
 !example.config.yml

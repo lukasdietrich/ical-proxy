@@ -3,67 +3,67 @@ name: Release
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
+
+permissions:
+  packages: write
+
+env:
+  VERSION: ${{ github.ref_name }}
 
 jobs:
   container:
     name: Publish container image
     runs-on: ubuntu-latest
 
+    env:
+      IMAGE: ghcr.io/${{ github.repository }}
+
     steps:
-      - name: Checkout 
-        uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v6
         with:
           fetch-depth: 1
 
-      - name: Container Tags
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: |
-            ghcr.io/lukasdietrich/ical-proxy
-          tags: |
-            type=edge
-            type=semver,pattern=v{{version}}
-            type=semver,pattern=v{{major}}
-            type=sha
+      - name: Login to ghcr.io
+        run: |
+          echo "${{ github.token }}" | podman login ghcr.io -u "${{ github.actor }}" --password-stdin
 
-      - uses: redhat-actions/buildah-build@v2
-        id: build-image
-        with:
-          tags: ${{ steps.meta.outputs.tags }}
-          containerfiles: |
-            ./Containerfile
+      - name: Build image
+        run: |
+          podman build --tag "${IMAGE}:${{ github.sha }}" .
 
-      - uses: redhat-actions/push-to-registry@v2
-        with:
-          tags: ${{ steps.build-image.outputs.tags }}
-          registry: ghcr.io/${{ github.repository_owner }}
-          username: ${{ github.actor }}
-          password: ${{ github.token }}
+      - name: Push image
+        run: |
+          for TAG in "latest" "${VERSION}"; do
+            podman tag "${IMAGE}:${{ github.sha }}" "${IMAGE}:${TAG}"
+            podman push "${IMAGE}:${TAG}"
+          done
 
   helm:
     name: Publish helm chart
     runs-on: ubuntu-latest
 
+    needs:
+      - container
+
+    env:
+      REGISTRY: ghcr.io/${{ github.repository }}/charts
+
     steps:
-      - name: Checkout 
-        uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v6
         with:
           fetch-depth: 1
 
-      - name: Replace git-tag in Chart.yaml
-        run: |
-          sed -i "s/git-tag/${{ github.ref_name }}/g" helm/ical-proxy-helm/Chart.yaml
-
       - name: Login to ghcr.io
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ github.token }}
+        run: |
+          echo "${{ github.token }}" | helm registry login "ghcr.io" -u "${{ github.actor }}" --password-stdin
+
+      - name: Package chart
+        run: |
+          helm package "charts/ical-proxy" --version "${VERSION}" --app-version "${VERSION}"
 
       - name: Push chart
         run: |
-          helm package helm/ical-proxy-helm
-          helm push "ical-proxy-helm-${{ github.ref_name }}.tgz" "oci://ghcr.io/${{ github.actor }}"
+          helm push "ical-proxy-${VERSION}.tgz" "oci://${REGISTRY}"

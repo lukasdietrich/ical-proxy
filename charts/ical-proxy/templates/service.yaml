@@ -1,9 +1,9 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "ical-proxy-helm.fullname" . }}
+  name: {{ include "ical-proxy.fullname" . }}
   labels:
-    {{- include "ical-proxy-helm.labels" . | nindent 4 }}
+    {{- include "ical-proxy.labels" . | nindent 4 }}
 spec:
   type: {{ .Values.service.type }}
   ports:
@@ -12,4 +12,4 @@ spec:
       protocol: TCP
       name: http
   selector:
-    {{- include "ical-proxy-helm.selectorLabels" . | nindent 4 }}
+    {{- include "ical-proxy.selectorLabels" . | nindent 4 }}
