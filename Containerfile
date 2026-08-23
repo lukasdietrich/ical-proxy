@@ -1,4 +1,4 @@
-from docker.io/library/golang:1.26-alpine as build
+from docker.io/library/golang:1.27-alpine as build
 
 	workdir /github.com/lukasdietrich/ical-proxy
 
